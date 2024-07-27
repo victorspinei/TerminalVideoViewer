@@ -56,5 +56,6 @@ func RenderImageFromSrc(src string, scale int, vertical_scale int) {
 
 func ClearTerminal() {
 	cmd := exec.Command("clear")
-	cmd.Run()
+    cmd.Stdout = os.Stdout
+    cmd.Run()
 }

@@ -2,6 +2,9 @@ package download
 
 import (
 	"fmt"
+	"strconv"
+	"bytes"
+	"regexp"
 	"os"
 	"os/exec"
 	"log"
@@ -70,6 +73,7 @@ func DownloadFromYoutubeLink(link string) {
 
 	fmt.Println("Downloaded 720p video and audio streams")
 
+	return 
 	// Merge video and audio
 	err = mergeVideoAndAudio("temp/video.mp4", "temp/audio.m4a", "temp/output.mp4")
 	if err != nil {
@@ -96,9 +100,35 @@ func mergeVideoAndAudio(videoFilePath, audioFilePath, outputFilePath string) err
 }
 
 func DeleteTempFiles() {
-    cmd := exec.Command("rm", "temp/audio.m4a", "temp/output.mp4", "temp/video.mp4")
+    cmd := exec.Command("rm", "temp/audio.m4a", "temp/output.mp4", "temp/video.mp4",)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
     cmd.Run()
+}
+
+func GetFps() float64 {
+	cmd := exec.Command("ffmpeg", "-i", "temp/video.mp4")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	cmd.Run()
+
+	// Print the ffmpeg output for debugging
+	output := stderr.String()
+	fmt.Println("FFmpeg Output:", output)
+
+	// Extract the FPS from ffmpeg output
+	re := regexp.MustCompile(`(\d+(?:\.\d+)?) fps`)
+	matches := re.FindStringSubmatch(output)
+	if len(matches) < 2 {
+		log.Fatalf("FPS not found in ffmpeg output")
+	}
+
+	fps, err := strconv.ParseFloat(matches[1], 64)
+	if err != nil {
+		log.Fatalf("Error parsing FPS: %v", err)
+	}
+
+	return fps
 }
