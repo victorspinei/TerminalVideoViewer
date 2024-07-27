@@ -11,7 +11,7 @@ import (
 func main() {
 	//render.RenderImageFromSrc("assets/fiona.jpg", horizontal_scale, vertical_scale);
 
-	download.DownloadFromYoutubeLink("https://www.youtube.com/watch?v=MFDwFOygx_g")
+	//download.DownloadFromYoutubeLink("https://www.youtube.com/watch?v=MFDwFOygx_g")
 	//download.DownloadFromYoutubeLink("https://www.youtube.com/watch?v=gZXqy3PbM3Q&t")
-	//download.DeleteTempFiles()
+	download.DeleteTempFiles()
 }

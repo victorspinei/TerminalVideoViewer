@@ -1,9 +1,10 @@
 package render
 
 import (
-	"os"
-	"image/jpeg"
 	"fmt"
+	"image/jpeg"
+	"os"
+	"os/exec"
 )
 
 func RenderImageFromSrc(src string, scale int, vertical_scale int) {
@@ -51,4 +52,9 @@ func RenderImageFromSrc(src string, scale int, vertical_scale int) {
 		}
 		fmt.Printf("\033[m\n")
 	}
+}
+
+func ClearTerminal() {
+	cmd := exec.Command("clear")
+	cmd.Run()
 }
