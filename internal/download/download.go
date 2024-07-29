@@ -74,7 +74,7 @@ func mergeVideoAndAudio(videoFilePath, audioFilePath, outputFilePath string) err
 }
 
 func DeleteTempFiles() {
-    cmd := exec.Command("rm", "temp/audio.m4a", "temp/output.mp4", "temp/video.mp4",)
+    cmd := exec.Command("rm", "temp/audio.m4a", "temp/output.mp4", "temp/video.mp4", "temp/audio.mp3",)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
