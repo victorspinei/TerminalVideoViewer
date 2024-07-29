@@ -67,7 +67,7 @@ func ClearTerminal() {
 
 var FramesArray []string
 
-func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int) {
+func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int, numWorkers int) {
 	framesChan := make(chan string, 1)
 	var preloadWg sync.WaitGroup
 
@@ -76,7 +76,7 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
 		defer preloadWg.Done()
 		for frameNumber := 1; frameNumber <= frameCount; frameNumber++ {
 			src := fmt.Sprintf("temp/frames/out-%03d.jpg", frameNumber)
-			frame := preLoadFrame(src, horizontal_scale, vertical_scale)
+			frame := preLoadFrame(src, horizontal_scale, vertical_scale, numWorkers)
 			framesChan <- frame
 		}
 		close(framesChan)
@@ -91,8 +91,7 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
 
 	preloadWg.Wait() 
 }
-
-func preLoadFrame(src string, scale int, vertical_scale int) string {
+func preLoadFrame(src string, scale int, vertical_scale int, numWorkers int) string {
     // Open the image file
     imageFile, err := os.Open(src)
     if err != nil {
@@ -113,39 +112,62 @@ func preLoadFrame(src string, scale int, vertical_scale int) string {
     height := loadedImage.Bounds().Dy()
 
     var currentFrame string = "\033[H"
+    rows := make([]string, height/vertical_scale)
+    var wg sync.WaitGroup
+    var mu sync.Mutex
 
-    // Loop over the image with the specified scales
-    for j := 0; j < height; j += vertical_scale {
-        var row string
-        for i := 0; i < width; i += scale {
-            avgR, avgG, avgB, count := 0, 0, 0, 0
+    // Calculate the height per worker
+    segmentHeight := height / numWorkers
 
-            // Calculate the average color for the scaled pixel
-            for r := 0; r < vertical_scale; r++ {
-                for c := 0; c < scale; c++ {
-                    ir := i + c
-                    jc := j + r
-                    if ir < width && jc < height {
-                        r, g, b, _ := loadedImage.At(ir, jc).RGBA()
-                        avgR += int(r >> 8)
-                        avgG += int(g >> 8)
-                        avgB += int(b >> 8)
-                        count++
-                    }
+    for w := 0; w < numWorkers; w++ {
+        wg.Add(1)
+        go func(workerID int) {
+            defer wg.Done()
+            for j := workerID * segmentHeight; j < (workerID+1)*segmentHeight; j += vertical_scale {
+                if j >= height {
+                    break
                 }
-            }
+                var row string
+                for i := 0; i < width; i += scale {
+                    avgR, avgG, avgB, count := 0, 0, 0, 0
 
-            // Average the color values
-            if count > 0 {
-                avgR /= count
-                avgG /= count
-                avgB /= count
-            }
+                    // Calculate the average color for the scaled pixel
+                    for r := 0; r < vertical_scale; r++ {
+                        for c := 0; c < scale; c++ {
+                            ir := i + c
+                            jc := j + r
+                            if ir < width && jc < height {
+                                r, g, b, _ := loadedImage.At(ir, jc).RGBA()
+                                avgR += int(r >> 8)
+                                avgG += int(g >> 8)
+                                avgB += int(b >> 8)
+                                count++
+                            }
+                        }
+                    }
 
-            // Create pixel and add to the row
-            row += fmt.Sprintf("\033[48;2;%d;%d;%dm ", avgR, avgG, avgB)
-        }
-        // Add row to current frame
+                    // Average the color values
+                    if count > 0 {
+                        avgR /= count
+                        avgG /= count
+                        avgB /= count
+                    }
+
+                    // Create pixel and add to the row
+                    row += fmt.Sprintf("\033[48;2;%d;%d;%dm ", avgR, avgG, avgB)
+                }
+                // Store row in the correct position
+                mu.Lock()
+                rows[j/vertical_scale] = row
+                mu.Unlock()
+            }
+        }(w)
+    }
+
+    wg.Wait()
+
+    // Combine rows into the final frame
+    for _, row := range rows {
         currentFrame += row
         currentFrame += "\n"
     }

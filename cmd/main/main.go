@@ -14,6 +14,7 @@ import (
 var horizontal_scale int = 4
 const factor float64 = 2.5
 var vertical_scale int = int(float64(horizontal_scale) * factor)
+var numWorkers int = 4
 
 func main() {
 	clean()
@@ -30,7 +31,7 @@ func main() {
 	frameDuration := time.Second / time.Duration(fps)
 
 	fmt.Printf("Begining to load frames and render")
-	render.Render(frameCount, frameDuration, horizontal_scale, vertical_scale)
+	render.Render(frameCount, frameDuration, horizontal_scale, vertical_scale, numWorkers)
 
 	clean()
 }
