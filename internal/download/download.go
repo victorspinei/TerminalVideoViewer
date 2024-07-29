@@ -132,7 +132,6 @@ func downloadVideoFile(client youtube.Client, video youtube.Video) {
 
 func downloadAudioFile(client youtube.Client, video youtube.Video) {
 	audioFormat := findFormatByItag(video.Formats, 140) // 140 is for audio
-	//audioFormat := findAudioFormat(video.Formats)
 	if audioFormat == nil {
 		log.Fatal("Audio format not found")
 	}
@@ -153,4 +152,10 @@ func downloadAudioFile(client youtube.Client, video youtube.Video) {
 	if err != nil {
 		log.Fatalf("Error downloading audio: %v", err)
 	}
+	convertAudioFile()
+}
+
+func convertAudioFile() {
+	cmd := exec.Command("ffmpeg", "-i", "temp/audio.m4a", "temp/audio.mp3",)
+	cmd.Run()
 }

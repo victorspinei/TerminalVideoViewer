@@ -1,20 +1,19 @@
 package main
 
 import (
-	//"github.com/victor247k/TerminalVideoViewer/internal/render"
-
-	"fmt"
 	"time"
+	"sync"
 
 	"github.com/victor247k/TerminalVideoViewer/internal/download"
 	"github.com/victor247k/TerminalVideoViewer/internal/extractvideoframes"
 	"github.com/victor247k/TerminalVideoViewer/internal/render"
+	"github.com/victor247k/TerminalVideoViewer/internal/audio"
 )
 
 var horizontal_scale int = 4
 const factor float64 = 2.5
 var vertical_scale int = int(float64(horizontal_scale) * factor)
-var numWorkers int = 4
+var numWorkers int = 8
 
 func main() {
 	clean()
@@ -25,13 +24,23 @@ func main() {
 
 	extractvideoframes.ExtractVideoFrames()
 
-	// Prepare to render frames
-	frameCount := extractvideoframes.GetFrameCount()
-	fps := download.GetFps()
-	frameDuration := time.Second / time.Duration(fps)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	fmt.Printf("Begining to load frames and render")
-	render.Render(frameCount, frameDuration, horizontal_scale, vertical_scale, numWorkers)
+	go func() {
+		defer wg.Done()
+		frameCount := extractvideoframes.GetFrameCount()
+		fps := download.GetFps()
+		frameDuration := time.Second / time.Duration(fps)
+
+		render.Render(frameCount, frameDuration, horizontal_scale, vertical_scale, numWorkers)
+	}()
+	go func() {
+		defer wg.Done()
+		audio.PlayAudio("temp/audio.mp3")
+	}()
+
+	wg.Wait()
 
 	clean()
 }
