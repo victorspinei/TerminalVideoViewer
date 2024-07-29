@@ -5,6 +5,8 @@ import (
 	"image/jpeg"
 	"os"
 	"os/exec"
+	"time"
+	"sync"
 )
 
 
@@ -65,12 +67,53 @@ func ClearTerminal() {
 
 var FramesArray [][][][]int
 
-func PreLoadFrame(src string, scale int, vertical_scale int) {
+func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int) {
+	framesChan := make(chan [][][]int, 1)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for frameNumber := 1; frameNumber <= frameCount; frameNumber++ {
+			src := fmt.Sprintf("temp/frames/out-%03d.jpg", frameNumber)
+			frame := preLoadFrame(src, horizontal_scale, vertical_scale)
+			framesChan <- frame
+		}
+		close(framesChan)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for frame := range framesChan {
+			//ClearTerminal()
+			fmt.Print("\033[H")
+
+			height := len(frame)
+			width := len(frame[0])
+
+			for j := 0; j < height; j++ {
+				for i := 0; i < width; i++ {
+					pixel := frame[j][i]
+					fmt.Printf("\033[48;2;%d;%d;%dm ", pixel[0], pixel[1], pixel[2])
+				}
+				fmt.Printf("\033[m\n")
+			}
+
+			// Wait for the next frame
+			time.Sleep(frameDuration)
+		}
+	}()
+
+	wg.Wait() // Ensure both goroutines complete
+}
+
+func preLoadFrame(src string, scale int, vertical_scale int) [][][]int {
 	// Open the image file
 	imageFile, err := os.Open(src)
 	if err != nil {
 		fmt.Println("couldn't open image")
-		return
+		return nil
 	}
 	defer imageFile.Close()
 
@@ -78,7 +121,7 @@ func PreLoadFrame(src string, scale int, vertical_scale int) {
 	loadedImage, err := jpeg.Decode(imageFile)
 	if err != nil {
 		fmt.Println("couldn't decode image")
-		return
+		return nil
 	}
 
 	// Get image dimensions
@@ -123,6 +166,5 @@ func PreLoadFrame(src string, scale int, vertical_scale int) {
 		currentFrame = append(currentFrame, row)
 	}
 
-	// Append the current frame to the FramesArray
-	FramesArray = append(FramesArray, currentFrame)
+	return currentFrame
 }
