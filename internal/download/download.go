@@ -1,13 +1,15 @@
 package download
 
 import (
-	"fmt"
-	"strconv"
 	"bytes"
-	"regexp"
+	"fmt"
+	"log"
 	"os"
 	"os/exec"
-	"log"
+	"regexp"
+	"strconv"
+	"sync"
+
 	"github.com/kkdai/youtube/v2"
 )
 
@@ -29,47 +31,19 @@ func DownloadFromYoutubeLink(link string) {
         log.Fatalf("Error getting video: %v", err)
     }
 
-    videoFormat := findFormatByItag(video.Formats, 136) // 136 is for 720p video
-	if videoFormat == nil {
-		log.Fatal("720p video format not found")
-	}
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	audioFormat := findFormatByItag(video.Formats, 140) // 140 is for audio
-	if audioFormat == nil {
-		log.Fatal("Audio format not found")
-	}
+	go func() {
+		defer wg.Done()
+		downloadVideoFile(client, *video)
+	}()
+	go func() {
+		defer wg.Done()
+		downloadAudioFile(client, *video)
+	}()
 
-	videoStream, _, err := client.GetStream(video, videoFormat)
-	if err != nil {
-		log.Fatalf("Error getting video stream: %v", err)
-	}
-
-	videoFile, err := os.Create("temp/video.mp4")
-	if err != nil {
-		log.Fatalf("Error creating video file: %v", err)
-	}
-	defer videoFile.Close()
-
-	_, err = videoFile.ReadFrom(videoStream)
-	if err != nil {
-		log.Fatalf("Error downloading video: %v", err)
-	}
-
-	audioStream, _, err := client.GetStream(video, audioFormat)
-	if err != nil {
-		log.Fatalf("Error getting audio stream: %v", err)
-	}
-
-	audioFile, err := os.Create("temp/audio.m4a")
-	if err != nil {
-		log.Fatalf("Error creating audio file: %v", err)
-	}
-	defer audioFile.Close()
-
-	_, err = audioFile.ReadFrom(audioStream)
-	if err != nil {
-		log.Fatalf("Error downloading audio: %v", err)
-	}
+	wg.Wait()
 
 	fmt.Println("Downloaded 720p video and audio streams")
 
@@ -131,4 +105,52 @@ func GetFps() float64 {
 	}
 
 	return fps
+}
+
+func downloadVideoFile(client youtube.Client, video youtube.Video) {
+	videoFormat := findFormatByItag(video.Formats, 136) // 136 is for 720p video
+	if videoFormat == nil {
+		log.Fatal("720p video format not found")
+	}
+
+	videoStream, _, err := client.GetStream(&video, videoFormat)
+	if err != nil {
+		log.Fatalf("Error getting video stream: %v", err)
+	}
+
+	videoFile, err := os.Create("temp/video.mp4")
+	if err != nil {
+		log.Fatalf("Error creating video file: %v", err)
+	}
+	defer videoFile.Close()
+
+	_, err = videoFile.ReadFrom(videoStream)
+	if err != nil {
+		log.Fatalf("Error downloading video: %v", err)
+	}
+}
+
+func downloadAudioFile(client youtube.Client, video youtube.Video) {
+	audioFormat := findFormatByItag(video.Formats, 140) // 140 is for audio
+	//audioFormat := findAudioFormat(video.Formats)
+	if audioFormat == nil {
+		log.Fatal("Audio format not found")
+	}
+
+
+	audioStream, _, err := client.GetStream(&video, audioFormat)
+	if err != nil {
+		log.Fatalf("Error getting audio stream: %v", err)
+	}
+
+	audioFile, err := os.Create("temp/audio.m4a")
+	if err != nil {
+		log.Fatalf("Error creating audio file: %v", err)
+	}
+	defer audioFile.Close()
+
+	_, err = audioFile.ReadFrom(audioStream)
+	if err != nil {
+		log.Fatalf("Error downloading audio: %v", err)
+	}
 }
