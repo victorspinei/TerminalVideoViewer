@@ -12,12 +12,13 @@ import (
 )
 
 var horizontal_scale int = 4
-var vertical_scale int = 10
+const factor float64 = 2.5
+var vertical_scale int = int(float64(horizontal_scale) * factor)
 
 func main() {
 	clean()
 
-	link := "https://youtu.be/Qi_-rfVdx5w?si=kO28ij8TpuMJB5TA"
+	link := "https://youtu.be/Nuanwn3v-2I?si=3nKI9Td8SrHjJTYD"
 
 	download.DownloadFromYoutubeLink(link)
 

@@ -67,13 +67,15 @@ func ClearTerminal() {
 
 var FramesArray [][][][]int
 
+
 func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int) {
 	framesChan := make(chan [][][]int, 1)
-	var wg sync.WaitGroup
+	var preloadWg, renderWg sync.WaitGroup
+	var mu sync.Mutex
 
-	wg.Add(1)
+	preloadWg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer preloadWg.Done()
 		for frameNumber := 1; frameNumber <= frameCount; frameNumber++ {
 			src := fmt.Sprintf("temp/frames/out-%03d.jpg", frameNumber)
 			frame := preLoadFrame(src, horizontal_scale, vertical_scale)
@@ -82,30 +84,49 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
 		close(framesChan)
 	}()
 
-	wg.Add(1)
+	renderWg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer renderWg.Done()
 		for frame := range framesChan {
+			mu.Lock()
 			//ClearTerminal()
 			fmt.Print("\033[H")
 
 			height := len(frame)
 			width := len(frame[0])
+			groups := 2
+			partHeight := height / groups // Split the frame into two parts
 
-			for j := 0; j < height; j++ {
-				for i := 0; i < width; i++ {
-					pixel := frame[j][i]
-					fmt.Printf("\033[48;2;%d;%d;%dm ", pixel[0], pixel[1], pixel[2])
-				}
-				fmt.Printf("\033[m\n")
+			var partRenderWg sync.WaitGroup
+			partRenderWg.Add(groups)
+
+			for part := 0; part < groups; part++ {
+				go func(part int) {
+					defer partRenderWg.Done()
+					start := part * partHeight
+					end := (part + 1) * partHeight
+					if part == groups-1 {
+						end = height
+					}
+
+					for j := start; j < end; j++ {
+						for i := 0; i < width; i++ {
+							pixel := frame[j][i]
+							fmt.Printf("\033[%d;%dH\033[48;2;%d;%d;%dm ", j+1, i+1, pixel[0], pixel[1], pixel[2])
+						}
+						fmt.Print("\033[m\n")
+					}
+				}(part)
 			}
 
-			// Wait for the next frame
+			partRenderWg.Wait()
+			mu.Unlock()
 			time.Sleep(frameDuration)
 		}
 	}()
 
-	wg.Wait() // Ensure both goroutines complete
+	preloadWg.Wait() // Ensure all frames are preloaded
+	renderWg.Wait()  // Ensure rendering is complete
 }
 
 func preLoadFrame(src string, scale int, vertical_scale int) [][][]int {
