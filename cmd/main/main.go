@@ -18,7 +18,7 @@ var numWorkers int = 8
 func main() {
 	clean()
 
-	link := "https://youtu.be/-pSf9_MgsZ4?si=bwTIbIzyTJTEnJ05"
+	link := "https://youtu.be/-pSf9_MgsZ4?si=Dijek22qmEMrmpHT"
 
 	download.DownloadFromYoutubeLink(link)
 
