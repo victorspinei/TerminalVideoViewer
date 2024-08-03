@@ -1,13 +1,14 @@
 package main
 
 import (
-	"time"
+	"fmt"
 	"sync"
+	"time"
 
+	"github.com/victor247k/TerminalVideoViewer/internal/audio"
 	"github.com/victor247k/TerminalVideoViewer/internal/download"
 	"github.com/victor247k/TerminalVideoViewer/internal/extractvideoframes"
 	"github.com/victor247k/TerminalVideoViewer/internal/render"
-	"github.com/victor247k/TerminalVideoViewer/internal/audio"
 )
 
 var horizontal_scale int = 4
@@ -18,7 +19,10 @@ var numWorkers int = 8
 func main() {
 	clean()
 
-	link := "https://youtu.be/-pSf9_MgsZ4?si=Dijek22qmEMrmpHT"
+	var link string
+
+	fmt.Println("Paste your YouTube link:")
+	fmt.Scan(&link)
 
 	download.DownloadFromYoutubeLink(link)
 
