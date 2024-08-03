@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"time"
 	"sync"
+
+	"github.com/victor247k/TerminalVideoViewer/internal/audio"
 )
 
 func ClearTerminal() {
@@ -18,17 +20,24 @@ func ClearTerminal() {
 
 var FramesArray []string
 
-func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int, numWorkers int) {
+func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int, numWorkers int, fps float64) {
 	framesChan := make(chan string, 1)
 	var preloadWg sync.WaitGroup
 
 	preloadWg.Add(1)
+    previousSecond := 0
 	go func() {
 		defer preloadWg.Done()
 		for frameNumber := 1; frameNumber <= frameCount; frameNumber++ {
 			src := fmt.Sprintf("temp/frames/out-%03d.jpg", frameNumber)
 			frame := preLoadFrame(src, horizontal_scale, vertical_scale, numWorkers)
 			framesChan <- frame
+            currentSecond := int(audio.PlaybackPosition / time.Second)
+            //frameNumber = int(audio.PlaybackPosition) * int(fps)
+            if previousSecond != currentSecond {
+                previousSecond = currentSecond
+                frameNumber = int(fps * float64(currentSecond))
+            }
 		}
 		close(framesChan)
 	}()
@@ -36,7 +45,7 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
 	go func() {
 		for frame := range framesChan {
             fmt.Print(frame)
-            time.Sleep(frameDuration)
+            //time.Sleep(frameDuration)
         }
 	}()
 

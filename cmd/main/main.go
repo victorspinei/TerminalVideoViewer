@@ -37,7 +37,8 @@ func main() {
 		fps := download.GetFps()
 		frameDuration := time.Second / time.Duration(fps)
 
-		render.Render(frameCount, frameDuration, horizontal_scale, vertical_scale, numWorkers)
+		render.Render(frameCount, frameDuration, horizontal_scale, vertical_scale, numWorkers, fps)
+
 	}()
 	go func() {
 		defer wg.Done()
