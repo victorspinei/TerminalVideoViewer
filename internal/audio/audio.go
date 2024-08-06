@@ -22,6 +22,7 @@ var (
 	op *oto.NewContextOptions
 	endTime int64
 	Paused bool
+	volume float64
 ) 
 
 const (
@@ -108,4 +109,23 @@ func Pause() {
 func Play() {
 	player.Play()
 	Paused = false
+}
+
+func IncreaseVolume() {
+	player.SetVolume(min(player.Volume() + 0.05, 1))
+	volume = player.Volume()
+}
+
+func DecreaseVolume() {
+	player.SetVolume(max(player.Volume() - 0.05, 0))
+	volume = player.Volume()
+}
+
+func MuteVolume() {
+	if player.Volume() == 0 {
+		player.SetVolume(volume)
+	} else {
+		volume = player.Volume()
+		player.SetVolume(0)
+	}
 }
