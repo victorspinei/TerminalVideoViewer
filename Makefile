@@ -14,4 +14,4 @@ clean:
 
 test:
 	go build -o ./bin/${BINARY_NAME} ./cmd/main/main.go
-	echo "https://www.youtube.com/watch?v=ucZl6vQ_8Uo" | ./bin/${BINARY_NAME}
+	echo "https://youtu.be/cNWKRMM_H3A?si=Xq6ltLjXOCNV5zBH" | ./bin/${BINARY_NAME}

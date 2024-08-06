@@ -38,11 +38,15 @@ func main() {
 		frameDuration := time.Second / time.Duration(fps)
 
 		render.Render(frameCount, frameDuration, horizontal_scale, vertical_scale, numWorkers, fps)
-
 	}()
 	go func() {
 		defer wg.Done()
 		audio.PlayAudio("temp/audio.mp3")
+		// Wait a bit for the audio to start
+		time.Sleep(3 * time.Second)
+		
+		// Simulate seeking forward
+		audio.SeekBackward()
 	}()
 
 	wg.Wait()
