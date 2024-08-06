@@ -42,10 +42,6 @@ func main() {
 	go func() {
 		defer wg.Done()
 		audio.PlayAudio("temp/audio.mp3")
-		time.Sleep(time.Second)
-		audio.Pause()
-		time.Sleep(time.Second)
-		audio.Play()
 	}()
 
 	wg.Wait()

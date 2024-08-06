@@ -3,8 +3,6 @@ package audio
 import (
 	"bytes"
 	"io"
-
-	//"io"
 	"os"
 	"time"
 
@@ -20,7 +18,6 @@ var (
     otoCtx *oto.Context
 	readyChan chan struct{}
 	player *oto.Player
-	audioData []byte
 	decodedMp3 *mp3.Decoder
 	op *oto.NewContextOptions
 	endTime int64
@@ -37,7 +34,6 @@ func PlayAudio(src string) {
 	 panic("reading audio.mp3 failed: " + err.Error())
 	}
  
-	audioData = fileBytes
 	fileBytesReader := bytes.NewReader(fileBytes)
 
 	decodedMp3, err = mp3.NewDecoder(fileBytesReader)
