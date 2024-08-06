@@ -2,7 +2,6 @@ package audio
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 
 	//"io"
@@ -25,33 +24,12 @@ var (
 	decodedMp3 *mp3.Decoder
 	op *oto.NewContextOptions
 	endTime int64
+	Paused bool
 ) 
 
 const (
 	seekInterval = 10 * 176400 // 10 seconds, 176400 = 44100 * 2 * 2
 )
-
-func SeekForward() {
-	currentTime, _ := player.Seek(0, io.SeekCurrent)
-	if currentTime + seekInterval >= endTime {
-		player.Seek(0, io.SeekEnd)
-		PlaybackOffset = AudioDuration - PlaybackPosition
-	} else {
-		player.Seek(seekInterval, io.SeekCurrent)
-		PlaybackOffset += time.Second * 10
-	}
-}
-
-func SeekBackward() {
-	currentTime, _ := player.Seek(0, io.SeekCurrent)
-	if currentTime - seekInterval < 0 {
-		player.Seek(0, io.SeekStart)
-		PlaybackOffset = -PlaybackPosition
-	} else {
-		player.Seek(-seekInterval, io.SeekCurrent)
-		PlaybackOffset -= time.Second * 10
-	}
-}
 
 func PlayAudio(src string) {
 	fileBytes, err := os.ReadFile(src)
@@ -92,6 +70,7 @@ func PlayAudio(src string) {
 	endTime, _ = player.Seek(0, io.SeekEnd)
 	player.Seek(0, io.SeekStart)
 	player.Play()
+	Paused = false
 
     go func() {
 		for player.IsPlaying() {
@@ -103,41 +82,34 @@ func PlayAudio(src string) {
 
 }
 
-func SeekAudio(targetTime time.Duration) {
-	if player != nil {
-		player.Close()
+func SeekForward() {
+	currentTime, _ := player.Seek(0, io.SeekCurrent)
+	if currentTime + seekInterval >= endTime {
+		player.Seek(0, io.SeekEnd)
+		PlaybackOffset = AudioDuration - PlaybackPosition
+	} else {
+		player.Seek(seekInterval, io.SeekCurrent)
+		PlaybackOffset += time.Second * 10
 	}
+}
 
-	// **Ensure the target time is within the bounds**
-	if targetTime < 0 || targetTime > AudioDuration {
-		fmt.Printf("Error: seek time %v is out of bounds. AudioDuration is %v\n", targetTime, AudioDuration)
-		panic("seek time is out of bounds")
+func SeekBackward() {
+	currentTime, _ := player.Seek(0, io.SeekCurrent)
+	if currentTime - seekInterval < 0 {
+		player.Seek(0, io.SeekStart)
+		PlaybackOffset = -PlaybackPosition
+	} else {
+		player.Seek(-seekInterval, io.SeekCurrent)
+		PlaybackOffset -= time.Second * 10
 	}
+}
 
-	// **Create a new decoder from the buffered audio data**
-	audioDataReader := bytes.NewReader(audioData)
-	decodedMp3, _ = mp3.NewDecoder(audioDataReader)
+func Pause() {
+	player.Pause()
+	Paused = true
+}
 
-	seekOffset := int64(time.Duration(targetTime)) / int64(time.Second) * int64(op.SampleRate*op.ChannelCount*2) / 10
-	fmt.Printf("SeekOffset calculated as %d bytes\n", seekOffset)
-
-	n, err := decodedMp3.Seek(int64(seekOffset), 0)
-  	if err != nil {
-    	fmt.Printf("Error seeking in audio data: %v\n", err)
-    	panic("failed to seek in audio data")
-  	}
-  	fmt.Printf("Seeked to byte position %d\n", n)
-
-	//_ = player.Close()
-	//player = otoCtx.NewPlayer(decodedMp3)
-	//player.Play()
-	player.Seek(-2000, 0)
-
-	StartTime = time.Now()
-	PlaybackPosition = targetTime
-
-	fmt.Println("check 1")
-	PlaybackPosition = time.Since(StartTime) + targetTime
-	fmt.Println("check 2")
-	time.Sleep(100 * time.Millisecond) 
+func Play() {
+	player.Play()
+	Paused = false
 }

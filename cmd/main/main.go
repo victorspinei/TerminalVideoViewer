@@ -42,11 +42,10 @@ func main() {
 	go func() {
 		defer wg.Done()
 		audio.PlayAudio("temp/audio.mp3")
-		// Wait a bit for the audio to start
-		time.Sleep(3 * time.Second)
-		
-		// Simulate seeking forward
-		audio.SeekBackward()
+		time.Sleep(time.Second)
+		audio.Pause()
+		time.Sleep(time.Second)
+		audio.Play()
 	}()
 
 	wg.Wait()

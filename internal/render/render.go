@@ -28,7 +28,8 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
     previousSecond := 0
 	go func() {
 		defer preloadWg.Done()
-		for frameNumber := 1; frameNumber <= frameCount; frameNumber++ {
+        frameNumber := 1
+		for frameNumber <= frameCount{
 			src := fmt.Sprintf("temp/frames/out-%03d.jpg", frameNumber)
 			frame := preLoadFrame(src, horizontal_scale, vertical_scale, numWorkers)
 			framesChan <- frame
@@ -37,6 +38,9 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
             if previousSecond != currentSecond {
                 previousSecond = currentSecond
                 frameNumber = int(fps * float64(currentSecond))
+            }
+            if !audio.Paused {
+                frameNumber++ 
             }
 		}
 		close(framesChan)
