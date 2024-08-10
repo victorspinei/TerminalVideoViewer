@@ -6,19 +6,24 @@ import (
 	"os/exec"
 	"strconv"
 	"regexp"
+	"github.com/victor247k/TerminalVideoViewer/internal/progressbar"
 )
 
 var frameCount int
 
 func ExtractVideoFrames() {
+	progressbar.SetProgressMeter(0)
 	os.MkdirAll("temp/frames", os.ModePerm)
+	progressbar.SetProgressMeter(0.05)
 
 	cmd := exec.Command("ffmpeg", "-i", "temp/video.mp4", "temp/frames/out-%03d.jpg")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
 	cmd.Run()
+	progressbar.SetProgressMeter(0.9)
 	frameCount = countFrames(stderr.String())	
+	progressbar.SetProgressMeter(1)
 }
 
 func countFrames(ffmpegOutput string) int {

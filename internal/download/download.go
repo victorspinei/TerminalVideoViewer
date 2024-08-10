@@ -10,8 +10,11 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/kkdai/youtube/v2"
+
+	"github.com/victor247k/TerminalVideoViewer/internal/progressbar"
 )
 
 func findFormatByItag(formats youtube.FormatList, itag int) *youtube.Format {
@@ -24,13 +27,16 @@ func findFormatByItag(formats youtube.FormatList, itag int) *youtube.Format {
 }
 
 func DownloadFromYoutubeLink(link string) {
+	progressbar.SetProgressMeter(0)
 	DeleteTempFiles()
 	client := youtube.Client{}
+	progressbar.SetProgressMeter(0.1)
 
 	video, err := client.GetVideo(link)
 	if err != nil {
         log.Fatalf("Error getting video: %v", err)
     }
+	progressbar.SetProgressMeter(0.4)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -43,35 +49,10 @@ func DownloadFromYoutubeLink(link string) {
 		defer wg.Done()
 		downloadAudioFile(client, *video)
 	}()
+	time.Sleep(time.Second)
+	progressbar.SetProgressMeter(1.00)
 
 	wg.Wait()
-
-	fmt.Println("Downloaded 720p video and audio streams")
-
-	return 
-	// Merge video and audio
-	err = mergeVideoAndAudio("temp/video.mp4", "temp/audio.m4a", "temp/output.mp4")
-	if err != nil {
-		log.Fatalf("Error merging video and audio: %v", err)
-	}
-
-	fmt.Println("Merged video and audio into output.mp4")
-}
-
-func mergeVideoAndAudio(videoFilePath, audioFilePath, outputFilePath string) error {
-	cmd := exec.Command("ffmpeg",
-		"-i", videoFilePath,
-		"-i", audioFilePath,
-		"-c:v", "copy",
-		"-c:a", "aac",
-		"-strict", "experimental",
-		outputFilePath,
-	)
-
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-
-	return cmd.Run()
 }
 
 func DeleteTempFiles() {
@@ -163,8 +144,11 @@ func convertAudioFile() {
 
 
 func CopyFromVideoPath(src string, dst string) {
+	progressbar.SetProgressMeter(0)
 	copyFile(src, dst)
+	progressbar.SetProgressMeter(0.4)
 	extractAudioFile()
+	progressbar.SetProgressMeter(1.0)
 }
 
 func copyFile(src, dst string) (error) {
