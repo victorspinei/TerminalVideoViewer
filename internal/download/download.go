@@ -3,6 +3,7 @@ package download
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -74,7 +75,7 @@ func mergeVideoAndAudio(videoFilePath, audioFilePath, outputFilePath string) err
 }
 
 func DeleteTempFiles() {
-    cmd := exec.Command("rm", "temp/audio.m4a", "temp/output.mp4", "temp/video.mp4", "temp/audio.mp3",)
+    cmd := exec.Command("rm", "-f", "temp/audio.m4a", "temp/output.mp4", "temp/video.mp4", "temp/audio.mp3",)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
@@ -157,5 +158,33 @@ func downloadAudioFile(client youtube.Client, video youtube.Video) {
 
 func convertAudioFile() {
 	cmd := exec.Command("ffmpeg", "-i", "temp/audio.m4a", "temp/audio.mp3",)
+	cmd.Run()
+}
+
+
+func CopyFromVideoPath(src string, dst string) {
+	copyFile(src, dst)
+	extractAudioFile()
+}
+
+func copyFile(src, dst string) (error) {
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+
+	_, err = io.Copy(destination, source)
+	return err
+}
+
+func extractAudioFile() {
+	cmd := exec.Command("ffmpeg", "-i", "temp/video.mp4", "-map", "0:1", "temp/audio.mp3",)
 	cmd.Run()
 }
