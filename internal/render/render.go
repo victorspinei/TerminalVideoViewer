@@ -19,8 +19,10 @@ func ClearTerminal() {
 }
 
 var FramesArray []string
+var Running bool
 
 func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int, numWorkers int, fps float64) {
+    Running = true
 	framesChan := make(chan string, 1)
 	var preloadWg sync.WaitGroup
 
@@ -41,6 +43,9 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
             }
             if !audio.Paused {
                 frameNumber++ 
+            }
+            if !Running {
+                break
             }
 		}
 		close(framesChan)

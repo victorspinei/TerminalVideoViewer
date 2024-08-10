@@ -9,6 +9,7 @@ import (
 	"github.com/victor247k/TerminalVideoViewer/internal/audio"
 	"github.com/victor247k/TerminalVideoViewer/internal/download"
 	"github.com/victor247k/TerminalVideoViewer/internal/extractvideoframes"
+	"github.com/victor247k/TerminalVideoViewer/internal/input"
 	"github.com/victor247k/TerminalVideoViewer/internal/menu"
 	"github.com/victor247k/TerminalVideoViewer/internal/render"
 
@@ -107,9 +108,10 @@ func main() {
 	exctractingWg.Wait()
   
   	var wg sync.WaitGroup
-  	wg.Add(2)
+  	wg.Add(3)
   
 	render.ClearTerminal()
+
   	go func() {
   		defer wg.Done()
   		frameCount := extractvideoframes.GetFrameCount()
@@ -122,9 +124,13 @@ func main() {
   		defer wg.Done()
   		audio.PlayAudio("temp/audio.mp3")
   	}()
+  	go func() {
+  		defer wg.Done()
+		input.HandleInput()
+  	}()
   
   	wg.Wait()
-  
+
     clean()
 }
 

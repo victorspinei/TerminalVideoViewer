@@ -129,3 +129,7 @@ func MuteVolume() {
 		player.SetVolume(0)
 	}
 }
+
+func Close() {
+	player.Close()
+}
