@@ -11,6 +11,7 @@ import (
 	"github.com/victor247k/TerminalVideoViewer/internal/extractvideoframes"
 	"github.com/victor247k/TerminalVideoViewer/internal/input"
 	"github.com/victor247k/TerminalVideoViewer/internal/menu"
+	"github.com/victor247k/TerminalVideoViewer/internal/message"
 	"github.com/victor247k/TerminalVideoViewer/internal/render"
 
 	"github.com/victor247k/TerminalVideoViewer/internal/progressbar"
@@ -28,8 +29,8 @@ const (
 func main() {
   	clean()
 
-	p := tea.NewProgram(menu.InitialModel())	
-	if _, err := p.Run(); err != nil {
+	menuProgram := tea.NewProgram(menu.InitialModel())	
+	if _, err := menuProgram.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
@@ -106,6 +107,12 @@ func main() {
 	}()
 
 	exctractingWg.Wait()
+
+	messageProgram := tea.NewProgram(message.InitialModel())	
+	if _, err := messageProgram.Run(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
+	}
   
   	var wg sync.WaitGroup
   	wg.Add(3)
