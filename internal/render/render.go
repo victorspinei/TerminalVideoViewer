@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"time"
 	"sync"
+    "strings"
 
 	"github.com/victor247k/TerminalVideoViewer/internal/audio"
 )
@@ -20,6 +21,16 @@ func ClearTerminal() {
 
 var FramesArray []string
 var Running bool
+
+var barWidth = 0
+
+func renderProgressBar(percent int) string {
+	progress := (percent * barWidth) / 100
+	return fmt.Sprintf("[%s%s] %d%%", 
+		strings.Repeat("█", progress), 
+		strings.Repeat(" ", barWidth-progress), 
+		percent)
+}
 
 func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, vertical_scale int, numWorkers int, fps float64) {
     Running = true
@@ -35,6 +46,11 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
 			src := fmt.Sprintf("temp/frames/out-%03d.jpg", frameNumber)
 			frame := preLoadFrame(src, horizontal_scale, vertical_scale, numWorkers)
 			framesChan <- frame
+
+            // Update progress bar
+            percent := int(frameNumber * 100 / frameCount)
+			fmt.Printf("\r%s", renderProgressBar(percent))
+
             currentSecond := int(audio.PlaybackPosition / time.Second)
             if previousSecond != currentSecond {
                 previousSecond = currentSecond
@@ -58,6 +74,8 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
 	}()
 
 	preloadWg.Wait() 
+
+    fmt.Print("\n\n")
 }
 
 func preLoadFrame(src string, scale int, vertical_scale int, numWorkers int) string {
@@ -148,6 +166,9 @@ func preLoadFrame(src string, scale int, vertical_scale int, numWorkers int) str
     for _, row := range rows {
         currentFrame += row
         currentFrame += "\n"
+        if barWidth == 0 {
+            barWidth = len(row) / 17
+        }
     }
 
     return currentFrame

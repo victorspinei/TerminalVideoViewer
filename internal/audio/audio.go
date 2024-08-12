@@ -20,7 +20,7 @@ var (
 	player *oto.Player
 	decodedMp3 *mp3.Decoder
 	op *oto.NewContextOptions
-	endTime int64
+	EndTime int64
 	Paused bool
 	Running bool = true
 	volume float64
@@ -66,8 +66,8 @@ func PlayAudio(src string) {
     PlaybackOffset = 0
 
 	player = otoCtx.NewPlayer(decodedMp3)
-	endTime, _ = player.Seek(-1, io.SeekEnd)
-	endTime++
+	EndTime, _ = player.Seek(-1, io.SeekEnd)
+	EndTime++
 	player.Seek(0, io.SeekStart)
 	player.Play()
 	Paused = false
@@ -85,7 +85,7 @@ func PlayAudio(src string) {
 func SeekForward() {
 	Pause()
 	currentTime, _ := player.Seek(0, io.SeekCurrent)
-	if currentTime + seekInterval >= endTime {
+	if currentTime + seekInterval >= EndTime {
 		Close()
 	} else {
 		player.Seek(seekInterval, io.SeekCurrent)

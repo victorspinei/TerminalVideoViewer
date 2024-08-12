@@ -40,7 +40,7 @@ func main() {
 	case menu.YouTubeOption:
 		var link string
 	
-		fmt.Printf("Paste your YouTube link\n\t> ")
+		fmt.Printf("Paste your YouTube link\n  > ")
 		fmt.Scan(&link)
 	
 		var downloadingWg sync.WaitGroup
@@ -65,7 +65,7 @@ func main() {
 	case menu.LocalOption:
 		var path string
 	
-		fmt.Printf("Paste the path to your video file:\n\t> ")
+		fmt.Printf("Paste the path to your video file:\n  > ")
 		fmt.Scan(&path)
 
 		var downloadingWg sync.WaitGroup

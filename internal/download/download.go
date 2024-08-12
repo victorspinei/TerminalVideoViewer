@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/kkdai/youtube/v2"
 
@@ -49,7 +48,6 @@ func DownloadFromYoutubeLink(link string) {
 		defer wg.Done()
 		downloadAudioFile(client, *video)
 	}()
-	time.Sleep(time.Second)
 	progressbar.SetProgressMeter(1.00)
 
 	wg.Wait()
