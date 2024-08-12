@@ -36,16 +36,15 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
 			frame := preLoadFrame(src, horizontal_scale, vertical_scale, numWorkers)
 			framesChan <- frame
             currentSecond := int(audio.PlaybackPosition / time.Second)
-            //frameNumber = int(audio.PlaybackPosition) * int(fps)
             if previousSecond != currentSecond {
                 previousSecond = currentSecond
                 frameNumber = int(fps * float64(currentSecond))
             }
+            if !Running || !audio.Running {
+                break
+            }
             if !audio.Paused {
                 frameNumber++ 
-            }
-            if !Running {
-                break
             }
 		}
 		close(framesChan)

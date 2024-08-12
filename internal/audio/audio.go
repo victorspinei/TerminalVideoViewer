@@ -22,11 +22,13 @@ var (
 	op *oto.NewContextOptions
 	endTime int64
 	Paused bool
+	Running bool = true
 	volume float64
 ) 
 
 const (
-	seekInterval = 10 * 176400 // 10 seconds, 176400 = 44100 * 2 * 2
+	seconds = 5
+	seekInterval = seconds * 176400 // seconds, 176400 = 44100 * 2 * 2
 )
 
 func PlayAudio(src string) {
@@ -64,7 +66,8 @@ func PlayAudio(src string) {
     PlaybackOffset = 0
 
 	player = otoCtx.NewPlayer(decodedMp3)
-	endTime, _ = player.Seek(0, io.SeekEnd)
+	endTime, _ = player.Seek(-1, io.SeekEnd)
+	endTime++
 	player.Seek(0, io.SeekStart)
 	player.Play()
 	Paused = false
@@ -80,25 +83,28 @@ func PlayAudio(src string) {
 }
 
 func SeekForward() {
+	Pause()
 	currentTime, _ := player.Seek(0, io.SeekCurrent)
 	if currentTime + seekInterval >= endTime {
-		player.Seek(0, io.SeekEnd)
-		PlaybackOffset = AudioDuration - PlaybackPosition
+		Close()
 	} else {
 		player.Seek(seekInterval, io.SeekCurrent)
-		PlaybackOffset += time.Second * 10
+		PlaybackOffset += time.Second * seconds
 	}
+	Play()
 }
 
 func SeekBackward() {
+	Pause()
 	currentTime, _ := player.Seek(0, io.SeekCurrent)
 	if currentTime - seekInterval < 0 {
 		player.Seek(0, io.SeekStart)
 		PlaybackOffset = -PlaybackPosition
 	} else {
 		player.Seek(-seekInterval, io.SeekCurrent)
-		PlaybackOffset -= time.Second * 10
+		PlaybackOffset -= time.Second * seconds
 	}
+	Play()
 }
 
 func Pause() {
@@ -109,16 +115,6 @@ func Pause() {
 func Play() {
 	player.Play()
 	Paused = false
-}
-
-func IncreaseVolume() {
-	player.SetVolume(min(player.Volume() + 0.05, 1))
-	volume = player.Volume()
-}
-
-func DecreaseVolume() {
-	player.SetVolume(max(player.Volume() - 0.05, 0))
-	volume = player.Volume()
 }
 
 func MuteVolume() {
@@ -132,4 +128,5 @@ func MuteVolume() {
 
 func Close() {
 	player.Close()
+	Running = false
 }
