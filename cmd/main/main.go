@@ -28,6 +28,7 @@ const (
 
 func main() {
   	clean()
+	fmt.Print("Welcome to Terminal Video Viewer!\n\n")
 
 	menuProgram := tea.NewProgram(menu.InitialModel())	
 	if _, err := menuProgram.Run(); err != nil {

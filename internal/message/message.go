@@ -30,8 +30,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := "Welcome to Terminal Video Viewer!\n\n"
-    s += "Before playing the video, please:\n"
+    s := "Before playing the video, please:\n"
     s += "1. Make your terminal fullscreen.\n"
     s += "2. Zoom out to fit the video properly.\n\n"
     s += "Controls:\n"

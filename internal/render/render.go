@@ -26,8 +26,8 @@ var barWidth = 0
 
 func renderProgressBar(percent int) string {
 	progress := (percent * barWidth) / 100
-	return fmt.Sprintf("[%s%s] %d%%", 
-		strings.Repeat("█", progress), 
+	return fmt.Sprintf("\n\n[%s%s] %d%%", 
+		strings.Repeat("\033[48;2;0;0;0m*", progress), 
 		strings.Repeat(" ", barWidth-progress), 
 		percent)
 }
@@ -54,7 +54,7 @@ func Render(frameCount int, frameDuration time.Duration, horizontal_scale int, v
             currentSecond := int(audio.PlaybackPosition / time.Second)
             if previousSecond != currentSecond {
                 previousSecond = currentSecond
-                frameNumber = int(fps * float64(currentSecond))
+                frameNumber = max(int(fps * float64(currentSecond)),1)
             }
             if !Running || !audio.Running {
                 break
