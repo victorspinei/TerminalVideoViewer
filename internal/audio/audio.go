@@ -74,8 +74,7 @@ func PlayAudio(src string) {
 
     go func() {
 		for player.IsPlaying() {
-			PlaybackPosition = time.Since(StartTime)
-			PlaybackPosition += PlaybackOffset
+			PlaybackPosition = time.Since(StartTime) + PlaybackOffset
 			time.Sleep(100 * time.Millisecond)
 		}
 	}()
@@ -108,13 +107,21 @@ func SeekBackward() {
 }
 
 func Pause() {
-	player.Pause()
-	Paused = true
+	if !Paused {
+		player.Pause()
+		Paused = true
+		// Update PlaybackOffset to reflect the pause time
+		PlaybackOffset += time.Since(StartTime) - PlaybackPosition
+	}
 }
 
 func Play() {
-	player.Play()
-	Paused = false
+	if Paused {
+		player.Play()
+		Paused = false
+		// Adjust StartTime to account for the pause duration
+		StartTime = time.Now().Add(-PlaybackPosition)
+	}
 }
 
 func MuteVolume() {
