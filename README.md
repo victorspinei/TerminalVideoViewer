@@ -5,7 +5,7 @@ Welcome to the Terminal Video Viewer! This project is a Go application designed 
 ## Preview
 
 <video width="630" height="300" controls>
-  <source src="https://github-production-user-asset-6210df.s3.amazonaws.com/93835023/357597903-eebcc3b8-f245-4e04-b76d-fa89d22d337e.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240813%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240813T224054Z&X-Amz-Expires=300&X-Amz-Signature=76476310e0ba0b63f37c9ec912b82e3e6807e60040b910cf5e35a4877d7a3fd4&X-Amz-SignedHeaders=host&actor_id=93835023&key_id=0&repo_id=833499137" type="video/mp4">
+  <source src="https://github.com/user-attachments/assets/eebcc3b8-f245-4e04-b76d-fa89d22d337e" type="video/mp4">
 </video>
 
 
