@@ -5,7 +5,7 @@ Welcome to the Terminal Video Viewer! This project is a Go application designed 
 ## Preview
 
 <video width="640" controls>
-  <source src="assets/preview.mp4" type="video/mp4">
+  <source src="https://github.com/victor247k/TerminalVideoViewer/assets/preview.mp4" type="video/mp4">
 </video>
 
 ## Features
